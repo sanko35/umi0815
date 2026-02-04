@@ -1,90 +1,1133 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Progate</title>
-  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
-  <link rel="stylesheet" type="text/css" href="stylesheet.css">
-</head>
-<body>
-  <header>
-    <div class="container">
-      <div class="header-left">
-        <img class="logo" src="https://prog-8.com/images/html/advanced/main_logo.png">
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ReserveMaster</title>
+
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Lucide Icons (CDN) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+      body {
+        font-family:
+          "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans",
+          Meiryo, sans-serif;
+        overflow: hidden; /* アプリ全体のスクロールを抑制 */
+      }
+      /* スクロールバー非表示 (機能は維持) */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      /* アニメーション定義 */
+      .fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .slide-up {
+        animation: slideUp 0.3s ease-out;
+      }
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      /* ローディング画面の制御 */
+      #loading-view {
+        transition: opacity 0.5s ease;
+        pointer-events: auto;
+      }
+      body.loaded #loading-view {
+        opacity: 0;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-100 text-slate-800 h-screen flex flex-col">
+    <!-- ヘッダー -->
+    <header
+      class="bg-slate-900 text-white p-2 flex justify-between items-center shadow-md z-50 shrink-0 h-14"
+    >
+      <div class="flex items-center gap-3 pl-2">
+        <i data-lucide="calendar" class="text-emerald-400" width="24"></i>
+        <h1 class="font-bold text-lg tracking-tight">
+          ReserveMaster
+          <span
+            class="text-xs font-normal opacity-70 ml-1 border border-slate-600 px-1 rounded"
+            >Local Demo</span
+          >
+        </h1>
       </div>
-      <span class="fa fa-bars menu-icon"></span>
-      <div class="header-right">
-        <a href="#">レッスン</a>
-        <a href="#">新規登録</a>
-        <a href="#" class="login">ログイン</a>
+
+      <div class="flex bg-slate-800 rounded-lg p-1">
+        <button
+          id="btn-view-pc"
+          class="flex items-center gap-2 px-4 py-1.5 rounded-md transition-all text-sm font-medium text-slate-400 hover:text-white"
+        >
+          <i data-lucide="monitor" width="16"></i> PC
+        </button>
+        <button
+          id="btn-view-tablet"
+          class="flex items-center gap-2 px-4 py-1.5 rounded-md transition-all text-sm font-medium text-slate-400 hover:text-white"
+        >
+          <i data-lucide="tablet" width="16"></i> タブレット
+        </button>
       </div>
-    </div>
-  </header>
-  <div class="top-wrapper">
-    <div class="container">
-      <h1>LEARN TO CODE.<br>LEARN TO BE CREATIVE.</h1>
-      <p>Progateはオンラインプログラミング学習サービスです。<br>初心者にもやさしいスライドとレッスンで、ウェブサービスを作りながらプログラミングを学んでいきましょう。</p>
-      <div class="btn-wrapper">
-        <a href="#" class="btn signup">新規登録はこちら</a>
-        <p>or</p>
-        <a href="#" class="btn facebook"><span class="fa fa-facebook"></span>Facebookで登録</a>
-        <a href="#" class="btn twitter"><span class="fa fa-twitter"></span>Twitterで登録</a>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main id="app-container" class="flex-1 relative overflow-hidden bg-white">
+      <!-- ローディング画面 -->
+      <div
+        id="loading-view"
+        class="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 z-[100]"
+      >
+        <i
+          data-lucide="refresh-cw"
+          class="animate-spin text-blue-600 mb-4"
+          width="48"
+          height="48"
+        ></i>
+        <p class="text-slate-500 font-medium">ReserveMasterを起動中...</p>
       </div>
-    </div>
-  </div>
-  <div class="lesson-wrapper">
-    <div class="container">
-      <div class="heading">
-        <h2>Learn Where to Get Started!</h2>
-      </div>
-      <div class="lessons">
-        <div class="lesson">
-          <div class="lesson-icon">
-            <img src="https://prog-8.com/images/html/advanced/html.png">
-            <p>HTML & CSS</p>
+
+      <!-- PC画面 (管理者ダッシュボード) -->
+      <div id="dashboard-view" class="hidden h-full flex flex-col">
+        <!-- PCヘッダー -->
+        <div
+          class="border-b px-6 py-3 flex justify-between items-center bg-white sticky top-0 z-10 shrink-0 h-16"
+        >
+          <div>
+            <h2
+              class="text-xl font-bold text-slate-800 flex items-center gap-2"
+            >
+              <i data-lucide="layout-grid" class="text-blue-600" width="24"></i>
+              会議室予約状況
+            </h2>
           </div>
-          <p class="text-contents">ウェブページの作成に使用される言語です。HTMLとCSSを組み合わせることで、静的なページを作り上げることができます。</p>
-        </div>
-        <div class="lesson">
-          <div class="lesson-icon">
-            <img src="https://prog-8.com/images/html/advanced/jQuery.png">
-            <p>jQuery</p>
+          <!-- 時計エリア -->
+          <div class="text-right">
+            <p id="dashboard-date" class="text-slate-500 text-sm font-bold">2月4日(水)</p>
+            <p id="dashboard-date" class="text-slate-500 text-sm font-bold"></p>
+            <p
+              id="dashboard-time"
+              class="text-2xl font-mono font-black text-slate-800 leading-none tracking-wide"
+            ></p>
           </div>
-          <p class="text-contents">素敵な動きを手軽に実装できるJavaScriptライブラリです。 アニメーション効果をつけたり、Ajax（エイジャックス）を使って外部ファイルを読み込んだりと色々なことができます。</p>
         </div>
-        <div class="lesson">
-          <div class="lesson-icon">
-            <img src="https://prog-8.com/images/html/advanced/ruby.png">
-            <p>Ruby</p>
+
+        <!-- 凡例 -->
+        <div
+          class="bg-slate-50 px-6 py-1 border-b flex justify-end gap-4 text-xs text-slate-600"
+        >
+          <div class="flex items-center">
+            <span
+              class="w-3 h-3 bg-blue-100 border-l-4 border-blue-500 mr-1"
+            ></span
+            >予約済み
           </div>
-          <p class="text-contents">オープンソースの動的なプログラミング言語で、 シンプルさと高い生産性を備えています。大きなWebアプリケーションから小さな日用ツールまで、さまざまなソフトウェアを作ることができます。</p>
+          <div class="flex items-center">
+            <span
+              class="w-3 h-3 bg-red-100 border-l-4 border-red-500 mr-1"
+            ></span
+            >使用中
+          </div>
+          <div class="flex items-center">
+            <span class="w-3 h-3 bg-slate-300 mr-1"></span>終了
+          </div>
         </div>
-        <div class="lesson">
-          <div class="lesson-icon">
-            <img src="https://prog-8.com/images/html/advanced/php.png">
-            <p>PHP</p>
+
+        <!-- ガントチャート本体 -->
+        <div class="flex-1 overflow-auto p-4 relative" id="gantt-container">
+          <div class="min-w-[1000px] relative" id="gantt-inner-wrapper">
+            <!-- タイムラインヘッダー (時間軸) -->
+            <div
+              id="timeline-header"
+              class="flex border-b border-slate-200 pb-2 mb-2 sticky top-0 bg-white z-30 shadow-sm"
+            >
+              <div
+                class="w-48 font-bold text-slate-700 pl-4 shrink-0 text-sm flex items-end pb-1"
+              >
+                会議室
+              </div>
+              <div
+                id="timeline-slots-header"
+                class="flex-1 flex justify-between px-2"
+              >
+                <!-- JSで生成 -->
+              </div>
+            </div>
+
+            <!-- 各会議室の行 -->
+            <div id="room-rows-container" class="relative z-10">
+              <!-- JSで生成 -->
+            </div>
           </div>
-          <p class="text-contents">HTMLだけではページの内容を変えることはできません。PHPはHTMLにプログラムを埋め込み、それを可能にします。</p>
         </div>
       </div>
-      <div class="clear"></div>
-    </div>
-  </div>
-  <div class="message-wrapper">
-    <div class="container">
-      <div class="heading">
-        <h2>さぁ、あなたもProgateでプログラミングを学んでみませんか?</h2>
-        <h3>Let's learn to code, learn to be creative!</h3>
+
+      <!-- タブレット画面 (現地用) -->
+      <div
+        id="tablet-view"
+        class="hidden h-full flex flex-col bg-slate-100 font-sans text-slate-800 overflow-hidden"
+      >
+        <!-- タブレットヘッダー -->
+        <div
+          class="bg-white px-6 py-2 shadow-sm flex justify-between items-center shrink-0 z-20 h-16"
+        >
+          <div class="flex items-center space-x-2">
+            <i data-lucide="map-pin" class="text-slate-500" width="24"></i>
+            <select
+              id="tablet-room-select"
+              class="text-2xl font-bold bg-transparent border-none focus:ring-0 cursor-pointer outline-none p-0 text-slate-800"
+            >
+              <!-- JSで生成 -->
+            </select>
+          </div>
+          <div
+            id="tablet-clock"
+            class="text-3xl font-mono font-black text-slate-800 tracking-wider"
+          >
+            <!-- JSで更新 -->
+          </div>
+        </div>
+
+        <!-- メインステータス表示 (緑/赤/黄) -->
+        <div
+          id="tablet-status-display"
+          class="flex-1 flex flex-col items-center justify-center text-white transition-colors duration-500 p-2 min-h-0 bg-emerald-500 overflow-hidden"
+        >
+          <div
+            class="flex flex-col items-center justify-center w-full max-w-4xl h-full"
+          >
+            <div class="flex-shrink-0 text-center">
+              <h1
+                id="status-text"
+                class="text-5xl md:text-7xl font-black tracking-tighter mb-2 shadow-sm transition-all leading-tight"
+              >
+                空室
+              </h1>
+              <p
+                id="sub-text"
+                class="text-lg md:text-xl font-medium opacity-90 transition-all"
+              >
+                現在利用可能です
+              </p>
+            </div>
+
+            <!-- 予約情報エリア (Next Reservationなど) -->
+            <div
+              id="tablet-info-area"
+              class="w-full mt-4 flex-shrink min-h-0 overflow-hidden flex justify-center px-4"
+            >
+              <!-- JSで注入 -->
+            </div>
+          </div>
+        </div>
+
+        <!-- アクションボタンエリア -->
+        <div
+          id="tablet-actions"
+          class="bg-white p-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] grid grid-cols-2 gap-3 shrink-0 z-10 h-32"
+        >
+          <!-- JSで注入 -->
+        </div>
+
+        <!-- 下部タイムライン -->
+        <div
+          id="tablet-timeline-area"
+          class="bg-white px-4 py-2 border-t border-slate-200 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] z-10 shrink-0 h-[80px]"
+        >
+          <div class="flex justify-between items-center mb-1">
+            <h3
+              class="text-sm font-bold text-slate-600 flex items-center gap-1"
+            >
+              <i data-lucide="calendar" width="16"></i> 本日の予約状況
+            </h3>
+            <div class="text-xs text-slate-400 flex gap-2">
+              <span class="flex items-center gap-1"
+                ><div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                予約</span
+              >
+              <span class="flex items-center gap-1"
+                ><div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                使用中</span
+              >
+            </div>
+          </div>
+
+          <div
+            id="tablet-timeline-bar"
+            class="relative h-8 bg-slate-100 rounded w-full border border-slate-200 overflow-hidden"
+          >
+            <!-- JSで注入 -->
+          </div>
+        </div>
       </div>
-      <span class="btn message">さっそく開発する</span>
+    </main>
+
+    <!-- 確認モーダル -->
+    <div
+      id="confirmation-modal"
+      class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4"
+    >
+      <div
+        class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 fade-in text-center"
+      >
+        <div
+          class="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4"
+        >
+          <i data-lucide="alert-triangle" class="text-red-600" width="24"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-800 mb-2">
+          予約を取り消しますか？
+        </h3>
+        <p class="text-sm text-slate-500 mb-6">
+          この操作は取り消せません。本当にこの予約を削除してもよろしいですか？
+        </p>
+        <div class="flex gap-3 justify-center">
+          <button
+            id="btn-confirm-cancel"
+            class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded font-medium transition-colors"
+          >
+            キャンセル
+          </button>
+          <button
+            id="btn-confirm-ok"
+            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded shadow-sm font-medium transition-colors"
+          >
+            削除する
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-  <footer>
-    <div class="container">
-      <img src="https://prog-8.com/images/html/advanced/footer_logo.png">
-      <p>Learn to Code, Learn to be Creative.</p>
+
+    <!-- 予約/詳細モーダル -->
+    <div
+      id="reservation-modal"
+      class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    >
+      <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 fade-in">
+        <h3
+          id="modal-title"
+          class="text-xl font-bold mb-4 flex items-center gap-2"
+        >
+          <i data-lucide="calendar" class="text-blue-600"></i> 予約作成
+        </h3>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700"
+              >会議室</label
+            >
+            <div id="modal-room-name" class="text-lg font-bold"></div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700"
+                >開始</label
+              >
+              <input
+                type="time"
+                id="modal-start-time"
+                class="w-full border rounded p-2 bg-slate-50 disabled:bg-slate-100 disabled:text-slate-500"
+                disabled
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700"
+                >終了</label
+              >
+              <input
+                type="time"
+                id="modal-end-time"
+                class="w-full border rounded p-2 bg-slate-50 disabled:bg-slate-100 disabled:text-slate-500"
+                disabled
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700"
+              >会議名</label
+            >
+            <input
+              type="text"
+              id="modal-meeting-title"
+              class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+              placeholder="例: 第1回 プロジェクト定例"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700"
+              >予約者名</label
+            >
+            <input
+              type="text"
+              id="modal-user-name"
+              class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+              placeholder="例: 山田 太郎"
+            />
+          </div>
+        </div>
+
+        <!-- フッター (JSで動的にボタンを配置) -->
+        <div id="modal-footer" class="mt-6 flex justify-end gap-3"></div>
+      </div>
     </div>
-  </footer>
-</body>
+
+    <!-- アプリケーションロジック -->
+    <script>
+      // --- 設定定数 ---
+      const ROOMS = [
+        {
+          id: "room-a",
+          name: "会議室A",
+          capacity: 8,
+          equipment: ["Projector", "Whiteboard"],
+        },
+        { id: "room-b", name: "会議室B", capacity: 6, equipment: ["Monitor"] },
+        { id: "room-c", name: "会議室C", capacity: 4, equipment: [] },
+        {
+          id: "room-d",
+          name: "会議室D",
+          capacity: 10,
+          equipment: ["Projector", "ConfPhone"],
+        },
+        { id: "room-e", name: "会議室E", capacity: 4, equipment: ["Monitor"] },
+        {
+          id: "room-f",
+          name: "会議室F",
+          capacity: 12,
+          equipment: ["Projector", "Whiteboard", "ConfPhone"],
+        },
+      ];
+      const BUSINESS_HOURS = { start: 9, end: 18 };
+
+      // --- 初期データ生成 (モック) ---
+      const generateInitialReservations = () => {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth();
+        const date = today.getDate();
+        const t = (h, m) => new Date(year, month, date, h, m);
+
+        return [];
+      };
+
+      // --- アプリケーション状態 ---
+      const state = {
+        viewMode: "pc", // 'pc' | 'tablet'
+        reservations: generateInitialReservations(),
+        selectedRoomId: ROOMS[0].id,
+        currentTime: new Date(),
+        modal: {
+          isOpen: false,
+          mode: "create",
+          reservationId: null,
+          roomId: null,
+        },
+        confirm: {
+          callback: null,
+        },
+      };
+
+      // --- ヘルパー関数 ---
+      const formatTime = (date) =>
+        date.toLocaleTimeString("ja-JP", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      const formatDate = (date) =>
+        date.toLocaleDateString("ja-JP", {
+          month: "long",
+          day: "numeric",
+          weekday: "short",
+        });
+      const formatTimeForInput = (date) => {
+        const h = date.getHours().toString().padStart(2, "0");
+        const m = date.getMinutes().toString().padStart(2, "0");
+        return `${h}:${m}`;
+      };
+
+      // --- データ操作ロジック ---
+      // 変更があったら再描画
+      const commit = () => {
+        renderApp();
+      };
+
+      function createReservation(data) {
+        const newRes = {
+          id: "res-" + Date.now(),
+          ...data,
+          createdAt: new Date(),
+        };
+        state.reservations.push(newRes);
+        commit();
+      }
+
+      function updateReservationStatus(id, status) {
+        const res = state.reservations.find((r) => r.id === id);
+        if (res) {
+          res.status = status;
+          if (status === "checked_in") res.checkInTime = new Date();
+          commit();
+        }
+      }
+
+      function updateReservationDetails(id, data) {
+        const index = state.reservations.findIndex((r) => r.id === id);
+        if (index !== -1) {
+          state.reservations[index] = { ...state.reservations[index], ...data };
+          commit();
+        }
+      }
+
+      function deleteReservation(id) {
+        state.reservations = state.reservations.filter((r) => r.id !== id);
+        commit();
+      }
+
+      function extendReservation(reservation) {
+        const res = state.reservations.find((r) => r.id === reservation.id);
+        if (res) {
+          res.endDate = new Date(res.endDate.getTime() + 15 * 60000); // +15分
+          commit();
+        }
+      }
+
+      function endMeetingEarly(reservation) {
+        const res = state.reservations.find((r) => r.id === reservation.id);
+        if (res) {
+          res.endDate = new Date(); // 現在時刻で終了
+          commit();
+        }
+      }
+
+      function getRoomStatus(roomId, now, reservations) {
+        const roomRes = reservations
+          .filter(
+            (r) =>
+              r.roomId === roomId &&
+              !["cancelled", "auto_cancelled"].includes(r.status),
+          )
+          .sort((a, b) => a.startDate - b.startDate);
+
+        const current = roomRes.find(
+          (r) => now >= r.startDate && now < r.endDate,
+        );
+        const next = roomRes.find((r) => r.startDate > now);
+        return { current, next, all: roomRes };
+      }
+
+      // --- モーダル制御 ---
+      function openConfirmModal(onConfirm) {
+        state.confirm.callback = onConfirm;
+        document
+          .getElementById("confirmation-modal")
+          .classList.remove("hidden");
+      }
+
+      function closeConfirmModal() {
+        document.getElementById("confirmation-modal").classList.add("hidden");
+        state.confirm.callback = null;
+      }
+
+      function openModal(
+        roomId,
+        timeString,
+        isEditable = false,
+        mode = "create",
+        existingData = null,
+      ) {
+        const room = ROOMS.find((r) => r.id === roomId);
+        state.modal = {
+          isOpen: true,
+          mode,
+          reservationId: existingData?.id,
+          roomId,
+        };
+
+        document.getElementById("modal-room-name").textContent = room.name;
+        const modalTitle = document.getElementById("modal-title");
+        const startInput = document.getElementById("modal-start-time");
+        const endInput = document.getElementById("modal-end-time");
+        const titleInput = document.getElementById("modal-meeting-title");
+        const nameInput = document.getElementById("modal-user-name");
+        const modalFooter = document.getElementById("modal-footer");
+
+        let start, end;
+
+        if (mode === "create") {
+          modalTitle.innerHTML = `<i data-lucide="calendar" class=""></i> 予約作成`;
+          const [h, m] = timeString.split(":").map(Number);
+          start = new Date(state.currentTime);
+          start.setHours(h, m, 0, 0);
+          end = new Date(start.getTime() + 60 * 60 * 1000);
+
+          titleInput.value = "";
+          nameInput.value = "";
+          modalFooter.innerHTML = `
+                    <button id="btn-modal-cancel" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded">キャンセル</button>
+                    <button id="btn-modal-submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded shadow-sm">予約する</button>
+                `;
+        } else {
+          modalTitle.innerHTML = `<i data-lucide="file-text" class=""></i> 予約詳細`;
+          start = existingData.startDate;
+          end = existingData.endDate;
+          titleInput.value = existingData.meetingTitle || "";
+          nameInput.value = existingData.userName || "";
+
+          modalFooter.innerHTML = `
+                    <button id="btn-modal-delete" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded mr-auto">予約を取り消す</button>
+                    <button id="btn-modal-cancel" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded">閉じる</button>
+                    <button id="btn-modal-submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded shadow-sm">変更を保存</button>
+                `;
+        }
+
+        startInput.value = formatTimeForInput(start);
+        endInput.value = formatTimeForInput(end);
+
+        const canEdit = isEditable || mode === "edit";
+        startInput.disabled = !canEdit;
+        endInput.disabled = !canEdit;
+        titleInput.disabled = false;
+        nameInput.disabled = false;
+
+        document.getElementById("reservation-modal").classList.remove("hidden");
+        if (mode === "create") titleInput.focus();
+
+        // イベントバインド
+        document.getElementById("btn-modal-cancel").onclick = closeModal;
+
+        if (document.getElementById("btn-modal-delete")) {
+          document.getElementById("btn-modal-delete").onclick = () => {
+            closeModal();
+            openConfirmModal(() =>
+              deleteReservation(state.modal.reservationId),
+            );
+          };
+        }
+
+        document.getElementById("btn-modal-submit").onclick = () => {
+          const title = titleInput.value || "会議";
+          const name = nameInput.value || "ゲスト";
+          const [sh, sm] = startInput.value.split(":").map(Number);
+          const [eh, em] = endInput.value.split(":").map(Number);
+
+          const newStart = new Date(state.currentTime);
+          newStart.setHours(sh, sm, 0, 0);
+          const newEnd = new Date(state.currentTime);
+          newEnd.setHours(eh, em, 0, 0);
+
+          if (newEnd <= newStart) {
+            alert("終了時刻は開始時刻より後に設定してください");
+            return;
+          }
+
+          if (mode === "create") {
+            createReservation({
+              roomId: state.modal.roomId,
+              startDate: newStart,
+              endDate: newEnd,
+              meetingTitle: title,
+              userName: name,
+              status: "reserved",
+            });
+          } else {
+            updateReservationDetails(state.modal.reservationId, {
+              meetingTitle: title,
+              userName: name,
+              startDate: newStart,
+              endDate: newEnd,
+            });
+          }
+          closeModal();
+        };
+
+        if (window.lucide) window.lucide.createIcons();
+      }
+
+      function closeModal() {
+        document.getElementById("reservation-modal").classList.add("hidden");
+        state.modal.isOpen = false;
+      }
+
+      // --- 描画ロジック ---
+
+      function renderApp() {
+        // ローディング解除
+        document.body.classList.add("loaded");
+
+        // ビュー切り替え
+        const dashboardView = document.getElementById("dashboard-view");
+        const tabletView = document.getElementById("tablet-view");
+        const btnPc = document.getElementById("btn-view-pc");
+        const btnTablet = document.getElementById("btn-view-tablet");
+
+        if (state.viewMode === "pc") {
+          dashboardView.classList.remove("hidden");
+          tabletView.classList.add("hidden");
+          btnPc.classList.replace("text-slate-400", "text-white");
+          btnPc.classList.add("bg-blue-600", "shadow-sm");
+          btnTablet.classList.replace("text-white", "text-slate-400");
+          btnTablet.classList.remove("bg-emerald-600", "shadow-sm");
+          renderDashboard();
+        } else {
+          dashboardView.classList.add("hidden");
+          tabletView.classList.remove("hidden");
+          btnTablet.classList.replace("text-slate-400", "text-white");
+          btnTablet.classList.add("bg-emerald-600", "shadow-sm");
+          btnPc.classList.replace("text-white", "text-slate-400");
+          btnPc.classList.remove("bg-blue-600", "shadow-sm");
+          renderTablet();
+        }
+        updateClock(); // 描画後に時計更新
+        if (window.lucide) window.lucide.createIcons();
+      }
+
+      function renderDashboard() {
+        // タイムラインヘッダー (一度だけ描画)
+        const slotsHeader = document.getElementById("timeline-slots-header");
+        if (slotsHeader && slotsHeader.innerHTML.trim() === "") {
+          let slotsHtml = "";
+          const slots = [];
+          for (let h = BUSINESS_HOURS.start; h < BUSINESS_HOURS.end; h++) {
+            slots.push(`${h}:00`);
+            slots.push(`${h}:30`);
+          }
+          slots.forEach((time, index) => {
+            const isHourStart = index % 2 === 0;
+            const textClass = isHourStart
+              ? "text-slate-700 font-bold"
+              : "text-slate-400 font-normal scale-90";
+            const borderClass = isHourStart
+              ? "border-l-2 border-slate-300"
+              : "border-l border-slate-200";
+            const bgClass =
+              Math.floor(index / 2) % 2 === 0 ? "bg-slate-50/50" : "bg-white";
+            slotsHtml += `<div class="flex-1 text-center text-xs ${textClass} ${borderClass} py-1 ${bgClass}">${time}</div>`;
+          });
+          slotsHeader.innerHTML = slotsHtml;
+        }
+
+        // 会議室行の描画
+        const container = document.getElementById("room-rows-container");
+        const slots = [];
+        for (let h = BUSINESS_HOURS.start; h < BUSINESS_HOURS.end; h++) {
+          slots.push(`${h}:00`);
+          slots.push(`${h}:30`);
+        }
+
+        container.innerHTML = ROOMS.map((room) => {
+          let rowHtml = `
+                <div class="flex items-center border-b border-slate-100 py-3 hover:bg-slate-50 transition-colors">
+                    <div class="w-48 pl-4 pr-2 shrink-0">
+                        <div class="font-bold text-slate-800">${room.name}</div>
+                        <div class="text-xs text-slate-500 flex items-center gap-1">
+                            <i data-lucide="users" width="12"></i> ${room.capacity}名
+                            ${room.equipment.length > 0 ? '<i data-lucide="monitor" width="12" class="ml-2"></i>' : ""}
+                        </div>
+                    </div>
+                    <div class="flex-1 flex h-12 relative bg-slate-50 rounded mx-2 border border-slate-300">
+                `;
+
+          // 空きスロット生成
+          slots.forEach((time, index) => {
+            const isHourStart = index % 2 === 0;
+            const borderClass = isHourStart
+              ? "border-l border-slate-300"
+              : "border-l border-slate-200 border-dashed";
+            const bgClass =
+              Math.floor(index / 2) % 2 === 0 ? "bg-slate-50" : "bg-white";
+            rowHtml += `
+                    <div class="flex-1 ${borderClass} ${bgClass} cursor-pointer hover:bg-blue-100/50 transition-colors slot-trigger relative group" 
+                         data-room-id="${room.id}" 
+                         data-time="${time}" 
+                         title="${time}">
+                         ${isHourStart ? `<span class="absolute top-1 left-1 text-[10px] text-slate-300 pointer-events-none select-none">${time}</span>` : ""}
+                    </div>`;
+          });
+
+          // 予約バーの描画
+          const roomReservations = state.reservations.filter(
+            (r) =>
+              r.roomId === room.id &&
+              !["cancelled", "auto_cancelled"].includes(r.status),
+          );
+          const dayStart = BUSINESS_HOURS.start * 60;
+          const totalMin = (BUSINESS_HOURS.end - BUSINESS_HOURS.start) * 60;
+
+          roomReservations.forEach((r) => {
+            const startMin =
+              r.startDate.getHours() * 60 + r.startDate.getMinutes();
+            const endMin = r.endDate.getHours() * 60 + r.endDate.getMinutes();
+            const left = ((startMin - dayStart) / totalMin) * 100;
+            const width = ((endMin - startMin) / totalMin) * 100;
+
+            if (left >= 0 && left + width <= 100) {
+              let colorClass =
+                r.status === "checked_in"
+                  ? "bg-red-100 border-red-500 text-red-700"
+                  : "bg-blue-100 border-blue-500 text-blue-700";
+              rowHtml += `
+                        <div class="absolute top-1 bottom-1 border-l-4 rounded-r px-2 text-xs overflow-hidden flex flex-col justify-center cursor-pointer shadow-sm z-10 hover:shadow-md transition-all ${colorClass} reservation-item"
+                             style="left: ${left}%; width: ${width}%"
+                             data-id="${r.id}"
+                             title="${r.meetingTitle} (${r.userName})">
+                            <div class="font-bold truncate pointer-events-none">${r.meetingTitle}</div>
+                            <div class="text-[10px] opacity-80 truncate pointer-events-none">${r.userName}</div>
+                        </div>`;
+            }
+          });
+
+          rowHtml += `</div></div>`;
+          return rowHtml;
+        }).join("");
+
+        // イベントリスナー設定
+        document.querySelectorAll(".slot-trigger").forEach((el) => {
+          el.addEventListener("click", () =>
+            openModal(el.dataset.roomId, el.dataset.time, false, "create"),
+          );
+        });
+        document.querySelectorAll(".reservation-item").forEach((el) => {
+          el.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const r = state.reservations.find(
+              (item) => item.id === el.dataset.id,
+            );
+            if (r) openModal(r.roomId, null, false, "edit", r);
+          });
+        });
+
+        // 現在時刻ラインのコンテナ初期化
+        const innerWrapper = document.getElementById("gantt-inner-wrapper");
+        if (innerWrapper && !document.getElementById("pc-red-line-container")) {
+          const lineContainer = document.createElement("div");
+          lineContainer.id = "pc-red-line-container";
+          lineContainer.className =
+            "absolute inset-0 flex pointer-events-none z-40 pt-10 pb-4";
+          lineContainer.innerHTML = `
+                    <div class="w-48 pl-4 pr-2 shrink-0"></div>
+                    <div class="flex-1 relative mx-2">
+                        <div id="pc-red-line" class="absolute top-0 bottom-0 w-0.5 bg-red-600 shadow-[0_0_4px_rgba(220,38,38,0.5)]" style="display:none;">
+                            <div id="pc-red-line-time" class="absolute -top-7 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm whitespace-nowrap"></div>
+                            <div class="absolute -top-1.5 -left-1 w-2.5 h-2.5 bg-red-600 rounded-full"></div>
+                        </div>
+                    </div>`;
+          innerWrapper.appendChild(lineContainer);
+        }
+        updatePcRedLinePosition();
+      }
+
+      function renderTablet() {
+        // 部屋選択プルダウン
+        const select = document.getElementById("tablet-room-select");
+        if (select && select.children.length !== ROOMS.length) {
+          select.innerHTML = ROOMS.map(
+            (r) =>
+              `<option value="${r.id}" ${r.id === state.selectedRoomId ? "selected" : ""}>${r.name}</option>`,
+          ).join("");
+          select.onchange = (e) => {
+            state.selectedRoomId = e.target.value;
+            renderApp();
+          };
+        }
+
+        const { current, next, all } = getRoomStatus(
+          state.selectedRoomId,
+          state.currentTime,
+          state.reservations,
+        );
+        const statusDisplay = document.getElementById("tablet-status-display");
+        const statusText = document.getElementById("status-text");
+        const subText = document.getElementById("sub-text");
+        const infoArea = document.getElementById("tablet-info-area");
+        const actions = document.getElementById("tablet-actions");
+
+        if (!statusDisplay) return;
+
+        // ステータス色リセット
+        statusDisplay.classList.remove(
+          "bg-emerald-500",
+          "bg-amber-400",
+          "bg-red-500",
+        );
+
+        if (current) {
+          if (current.status === "checked_in") {
+            // 使用中 (赤)
+            statusDisplay.classList.add("bg-red-500");
+            statusText.textContent = "使用中";
+            subText.textContent = `終了予定: ${formatTime(current.endDate)}`;
+
+            infoArea.innerHTML = `
+                        <div class="bg-white/20 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-white/10 text-left w-full">
+                            <div class="mb-1 border-b border-white/20 pb-1">
+                                <span class="opacity-80 text-[10px] font-bold tracking-wider block mb-0.5">CURRENT MEETING</span>
+                                <span class="font-bold text-xl md:text-2xl leading-tight block drop-shadow-sm truncate">${current.meetingTitle || "会議"}</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <span class="opacity-80 text-[10px] font-bold tracking-wider block mb-0.5">ORGANIZER</span>
+                                    <span class="font-bold text-base md:text-lg truncate block flex items-center gap-1"><i data-lucide="users" width="14"></i> ${current.userName}</span>
+                                </div>
+                                <div>
+                                    <span class="opacity-80 text-[10px] font-bold tracking-wider block mb-0.5">TIME</span>
+                                    <span class="font-bold text-base md:text-lg font-mono block flex items-center gap-1"><i data-lucide="clock" width="14"></i> ${formatTime(current.startDate)} - ${formatTime(current.endDate)}</span>
+                                </div>
+                            </div>
+                        </div>`;
+
+            actions.innerHTML = `
+                        <button id="btn-extend" class="bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl py-2 flex flex-col items-center justify-center space-y-0.5 border border-slate-200 transition-colors">
+                            <i data-lucide="plus" width="20"></i><span class="text-base font-bold">15分延長</span><span class="text-[10px] font-medium ${!next ? "text-green-600" : "text-red-500"}">${!next ? "延長可能" : "次予約あり"}</span>
+                        </button>
+                        <button id="btn-end" class="bg-slate-800 hover:bg-slate-900 text-white rounded-xl py-2 flex flex-col items-center justify-center space-y-0.5 shadow-md transition-colors">
+                            <i data-lucide="log-out" width="20"></i><span class="text-base font-bold">退室 (終了)</span>
+                        </button>`;
+
+            document.getElementById("btn-extend").onclick = () =>
+              extendReservation(current);
+            document.getElementById("btn-end").onclick = () =>
+              endMeetingEarly(current);
+          } else {
+            // 予約あり (黄)
+            statusDisplay.classList.add("bg-amber-400");
+            statusText.textContent = "予約あり";
+            subText.textContent = "チェックインしてください";
+
+            infoArea.innerHTML = `
+                        <div class="bg-white/20 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-white/10 text-left w-full">
+                            <div class="mb-1 border-b border-white/20 pb-1">
+                                <span class="opacity-80 text-[10px] font-bold tracking-wider block mb-0.5">NEXT MEETING</span>
+                                <span class="font-bold text-xl md:text-2xl leading-tight block drop-shadow-sm truncate">${current.meetingTitle || "会議"}</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <span class="opacity-80 text-[10px] font-bold tracking-wider block mb-0.5">ORGANIZER</span>
+                                    <span class="font-bold text-base md:text-lg truncate block flex items-center gap-1"><i data-lucide="users" width="14"></i> ${current.userName}</span>
+                                </div>
+                                <div>
+                                    <span class="opacity-80 text-[10px] font-bold tracking-wider block mb-0.5">TIME</span>
+                                    <span class="font-bold text-base md:text-lg font-mono block flex items-center gap-1"><i data-lucide="clock" width="14"></i> ${formatTime(current.startDate)} - ${formatTime(current.endDate)}</span>
+                                </div>
+                            </div>
+                        </div>`;
+
+            actions.innerHTML = `
+                        <button id="btn-cancel" class="bg-slate-100 hover:bg-slate-200 text-red-600 rounded-xl py-2 flex flex-col items-center justify-center space-y-0.5 border border-slate-200 transition-colors">
+                            <i data-lucide="trash-2" width="20"></i><span class="text-base font-bold">予約取り消し</span>
+                        </button>
+                        <button id="btn-checkin" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2 flex flex-col items-center justify-center space-y-0.5 animate-pulse shadow-md">
+                            <i data-lucide="check-circle" width="24"></i><span class="text-xl md:text-2xl font-bold">チェックイン</span>
+                        </button>`;
+
+            document.getElementById("btn-checkin").onclick = () =>
+              updateReservationStatus(current.id, "checked_in");
+            document.getElementById("btn-cancel").onclick = () =>
+              openConfirmModal(() => deleteReservation(current.id));
+          }
+        } else {
+          // 空室 (緑)
+          statusDisplay.classList.add("bg-emerald-500");
+          statusText.textContent = "空室";
+          subText.textContent = "現在利用可能です";
+
+          if (next) {
+            infoArea.innerHTML = `
+                        <div id="tablet-next-res-box" class="mt-2 bg-black/10 backdrop-blur-md p-3 rounded-xl w-full border border-white/10 text-left cursor-pointer hover:bg-black/20 transition-colors">
+                            <div class="flex items-center gap-2 mb-1 text-yellow-100">
+                                <span class="text-[10px] font-bold uppercase tracking-widest">Next Reservation</span>
+                                <span class="ml-auto text-[10px] opacity-75"><i data-lucide="trash-2" width="10" class="inline"></i> タップで削除</span>
+                            </div>
+                            <div class="font-bold text-lg md:text-xl mb-1 truncate">${next.meetingTitle || "会議"}</div>
+                            <div class="flex justify-between items-center text-xs border-t border-white/10 pt-1 mt-1">
+                                <div class="flex items-center gap-1 opacity-90"><i data-lucide="users" width="12"></i> <span>${next.userName}</span></div>
+                                <div class="font-mono font-bold">${formatTime(next.startDate)} 〜</div>
+                            </div>
+                        </div>`;
+            document.getElementById("").onclick = () =>
+              openConfirmModal(() => deleteReservation(next.id));
+          } else {
+            infoArea.innerHTML = "";
+          }
+
+          actions.innerHTML = `
+                    <button id="btn-quick" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-3 flex flex-col items-center justify-center space-y-0.5 transition-transform active:scale-[0.98] shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="clock" aria-hidden="true" class="lucide lucide-clock"><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="10"></circle></svg>
+                        <i data-lucide="clock" width="24"></i><span class="text-base md:text-lg font-bold">クイック予約</span><span class="text-[10px] opacity-80">今すぐ1時間利用</span>
+                    </button>
+                    <button id="btn-custom-reserve" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 flex flex-col items-center justify-center space-y-0.5 transition-transform active:scale-[0.98] shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="calendar-plus" aria-hidden="true" class="lucide lucide-calendar-plus"><path d="M16 19h6"></path><path d="M16 2v4"></path><path d="M19 16v6"></path><path d="M21 12.598V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8.5"></path><path d="M3 10h18"></path><path d="M8 2v4"></path></svg>
+                        <i data-lucide="calendar-plus" width="24"></i><span class="text-base md:text-lg font-bold">時間指定予約</span><span class="text-[10px] opacity-80">開始・終了時間を指定</span>
+                    </button>`;
+
+          document.getElementById("btn-quick").onclick = () => {
+            let endTime = new Date(
+              state.currentTime.getTime() + 60 * 60 * 1000,
+            );
+            const m = endTime.getMinutes();
+            endTime.setMinutes(Math.ceil(m / 15) * 15);
+            if (next && next.startDate < endTime) endTime = next.startDate;
+            createReservation({
+              roomId: state.selectedRoomId,
+              startDate: state.currentTime,
+              endDate: endTime,
+              userName: "クイック予約",
+              meetingTitle: "クイック利用",
+              status: "checked_in",
+            });
+          };
+
+          //document.getElementById("btn-custom-reserve").onclick = () => {
+          document.getElementById("").onclick = () => {
+            const now = new Date();
+            const h = now.getHours();
+            const m = now.getMinutes();
+            let nextSlotH = m < 30 ? h : h + 1;
+            let nextSlotM = m < 30 ? 30 : 0;
+            openModal(
+              state.selectedRoomId,
+              `${nextSlotH}:${nextSlotM === 0 ? "00" : "30"}`,
+              true,
+              "create",
+            );
+          };
+        }
+        renderTabletTimeline(all);
+      }
+
+      function renderTabletTimeline(all) {
+        const timelineBar = document.getElementById("tablet-timeline-bar");
+        if (!timelineBar) return;
+
+        const startHour = BUSINESS_HOURS.start;
+        const endHour = BUSINESS_HOURS.end;
+        const totalMinutes = (endHour - startHour) * 60;
+        const now = state.currentTime;
+        const nowInMinutes =
+          now.getHours() * 60 + now.getMinutes() - startHour * 60;
+        const nowPercent = (nowInMinutes / totalMinutes) * 100;
+
+        let timelineHtml = "";
+        for (let i = 0; i <= endHour - startHour; i++) {
+          timelineHtml += `<div class="absolute top-0 bottom-0 border-l border-slate-400 text-[10px] font-bold text-slate-700 pl-1 pt-4" style="left: ${(i / (endHour - startHour)) * 100}%">${startHour + i}</div>`;
+        }
+
+        all.forEach((r) => {
+          const rStart = r.startDate.getHours() * 60 + r.startDate.getMinutes();
+          const rEnd = r.endDate.getHours() * 60 + r.endDate.getMinutes();
+          const startOffset = rStart - startHour * 60;
+          const left = (startOffset / totalMinutes) * 100;
+          const width = ((rEnd - rStart) / totalMinutes) * 100;
+
+          if (left > 100 || left + width < 0) return;
+
+          let renderLeft = Math.max(0, left);
+          let renderWidth = width;
+          if (left < 0) renderWidth = width + left;
+          if (renderLeft + renderWidth > 100) renderWidth = 100 - renderLeft;
+
+          let colorClass =
+            r.status === "checked_in"
+              ? "bg-red-500/90 hover:bg-red-600"
+              : "bg-blue-500/90 hover:bg-blue-600";
+
+          timelineHtml += `<div class="absolute top-1 bottom-2 rounded-sm ${colorClass} text-white text-[8px] flex items-center justify-center overflow-hidden whitespace-nowrap px-0.5 border border-white/20 shadow-sm" style="left: ${renderLeft}%; width: ${renderWidth}%">${renderWidth > 8 ? r.meetingTitle : ""}</div>`;
+        });
+
+        if (nowPercent >= 0 && nowPercent <= 100) {
+          timelineHtml += `<div class="absolute top-0 bottom-0 w-0.5 bg-red-600 z-20" style="left: ${nowPercent}%"><div class="absolute -top-1 -left-1 w-2 h-2 bg-red-600 rounded-full border border-white"></div></div>`;
+        }
+        timelineBar.innerHTML = timelineHtml;
+      }
+
+      function updatePcRedLinePosition() {
+        const redLine = document.getElementById("pc-red-line");
+        const redLineTime = document.getElementById("pc-red-line-time");
+        if (!redLine || !redLineTime) return;
+
+        const startHour = BUSINESS_HOURS.start;
+        const endHour = BUSINESS_HOURS.end;
+        const now = state.currentTime;
+        const nowInMinutes =
+          now.getHours() * 60 + now.getMinutes() - startHour * 60;
+        const totalMinutes = (endHour - startHour) * 60;
+        const nowPercent = (nowInMinutes / totalMinutes) * 100;
+
+        if (nowPercent >= 0 && nowPercent <= 100) {
+          redLine.style.display = "block";
+          redLine.style.left = `${nowPercent}%`;
+          redLineTime.textContent = formatTime(now);
+        } else {
+          redLine.style.display = "none";
+        }
+      }
+
+      function updateClock() {
+        state.currentTime = new Date();
+
+        const pcDateEl = document.getElementById("");
+        const pcTimeEl = document.getElementById("dashboard-time");
+        const tabClockEl = document.getElementById("tablet-clock");
+
+        if (state.viewMode === "pc") {
+          if (pcDateEl) pcDateEl.textContent = formatDate(state.currentTime);
+          if (pcTimeEl) pcTimeEl.textContent = formatTime(state.currentTime);
+          updatePcRedLinePosition();
+        } else {
+          if (tabClockEl)
+            tabClockEl.textContent = formatTime(state.currentTime);
+        }
+      }
+
+      // --- 起動 ---
+      document.getElementById("confirmation-modal").onclick = (e) => {
+        if (e.target === document.getElementById("confirmation-modal"))
+          closeConfirmModal();
+      };
+      document.getElementById("btn-confirm-cancel").onclick = closeConfirmModal;
+
+      document.getElementById("btn-view-pc").onclick = () => {
+        state.viewMode = "pc";
+        renderApp();
+      };
+      document.getElementById("btn-view-tablet").onclick = () => {
+        state.viewMode = "tablet";
+        renderApp();
+      };
+
+      // 時計更新開始
+      setInterval(updateClock, 1000);
+
+      // 初回描画
+      renderApp();
+    </script>
+  </body>
 </html>
